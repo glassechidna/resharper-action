@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - latest
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+  # Run tests for any PRs.
+  pull_request:
+
+env:
+  IMAGE_ID: glassechidna/resharper-action
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Log into registry
+        run: docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build image
+        run: docker build -t $IMAGE_ID .
+
+      - name: get sample
+        run: git clone https://github.com/aidansteele/demo-serverless-aspnetcore.git
+
+      - name: run it
+        uses: ./
+        with:
+          solution: demo-serverless-aspnetcore/HelloWorld.sln
+
+      - name: Push image
+        if: github.event_name == 'push'
+        run: |
+          set -eux
+
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          docker tag glassechidna/resharper-action $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION

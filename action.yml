@@ -1,0 +1,19 @@
+name: Unofficial Resharper for GitHub
+description: Turn Resharper code inspections into GitHub PR annotations
+inputs:
+  solution:
+    description: Path to an .sln file
+    required: false
+  report:
+    description: Path to an .xml file of a pre-created report
+    required: false
+runs:
+  using: docker
+  image: docker://glassechidna/resharper-action
+  args:
+    - sh
+    - -c
+    - "resharper-action ${INPUT_SOLUTION}${INPUT_REPORT}"
+branding:
+  color: red
+  icon: alert-octagon
