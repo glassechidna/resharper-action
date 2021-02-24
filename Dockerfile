@@ -5,8 +5,8 @@ COPY . .
 RUN CGO_ENABLED=0 go build -ldflags="-s -w"
 RUN ls -lh
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1
-ENV RESHARPER_CLI_VERSION=2019.3.4
+FROM mcr.microsoft.com/dotnet/core/sdk:5.0
+ENV RESHARPER_CLI_VERSION=2020.3.2
 
 RUN mkdir -p /usr/local/share/dotnet/sdk/NuGetFallbackFolder
 
