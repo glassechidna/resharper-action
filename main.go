@@ -14,7 +14,9 @@ import (
 )
 
 func main() {
-	noRestorePtr := pflag.Bool("no-restore", false, "")
+	noRestorePtr := pflag.Bool("no-restore", false, "if you want to skip running 'dotnet restore'")
+	cacheHomePtr := pflag.String("cache-home", "", "directory to use for caching")
+
 	pflag.Parse()
 
 	args := pflag.Args()
@@ -34,7 +36,7 @@ func main() {
 			dotnetRestore(path)
 		}
 
-		path = generateReport(path)
+		path = generateReport(path, cacheHomePtr)
 		ext = filepath.Ext(path)
 	}
 
@@ -57,19 +59,30 @@ func dotnetRestore(slnPath string) {
 
 	err := cmd.Run()
 	if err != nil {
+    fmt.Fprintf(os.Stderr, "Error dotnet restore\n")
 		os.Exit(1)
 	}
 }
 
-func generateReport(slnPath string) string {
+func generateReport(slnPath string, cacheHomePtr *string) string {
 	outPath := filepath.Join(os.TempDir(), "report.xml")
 
-	cmd := exec.Command("inspectcode.sh", "--output="+outPath, slnPath)
+  arguments := []string{}
+  arguments = append(arguments, "--output=" + outPath)
+  if *cacheHomePtr != "" {
+    os.MkdirAll(*cacheHomePtr, 0755)
+    arguments = append(arguments, "--cache-home=" + *cacheHomePtr)
+  }
+  arguments = append(arguments,slnPath)
+
+  fmt.Fprintf(os.Stderr, "run inspectcode.sh " + strings.Join(arguments, " ") + "\n")
+	cmd := exec.Command("inspectcode.sh", arguments...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
 	err := cmd.Run()
 	if err != nil {
+	  fmt.Fprintf(os.Stderr, "Error run inspectcode.sh")
 		os.Exit(1)
 	}
 
@@ -125,7 +138,7 @@ func severityToLevel(severity string) string {
 func usage() {
 	exe, _ := os.Executable()
 	fmt.Fprintf(os.Stderr, `
-Usage: %s [--no-restore] (solution.sln|results.xml)
+Usage: %s [--no-restore] [--cache-home=directory] (solution.sln|results.xml)
 
 There are two modes of operation:
 
