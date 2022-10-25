@@ -14,23 +14,33 @@ on:
   pull_request:
 
 env:
-  IMAGE_ID: glassechidna/resharper-action
+  IMAGE_ID: jksy/resharper-action
 
 jobs:
   push:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+          - resharper_cli_version: '2021.3.4'
+            dot_net_version: '6.0-jammy'
+
     steps:
       - uses: actions/checkout@v2
 
       - name: Log into registry
-        run: docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
+        run: echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USER --password-stdin
         env:
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build image
-        run: docker build -t $IMAGE_ID .
+        run: |
+          docker build -t $IMAGE_ID \
+              --build-arg RESHARPER_CLI_VERSION=${{ matrix.resharper_cli_version }} \
+              --build-arg DOT_NET_VERSION=${{ matrix.dot_net_version }} \
+              .
 
       - name: get sample
         run: git clone https://github.com/aidansteele/demo-serverless-aspnetcore.git
@@ -51,5 +61,5 @@ jobs:
           # Strip "v" prefix from tag name
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
-          docker tag glassechidna/resharper-action $IMAGE_ID:$VERSION
+          docker tag jksy/resharper-action $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
