@@ -7,13 +7,16 @@ inputs:
   report:
     description: Path to an .xml file of a pre-created report
     required: false
+  cache-home:
+    description: Path to cache-home directory
+    required: false
 runs:
   using: docker
   image: docker://jksy/resharper-action
   args:
     - sh
     - -c
-    - "resharper-action ${INPUT_SOLUTION}${INPUT_REPORT}"
+    - "resharper-action ${INPUT_SOLUTION} --cache-home='${INPUT_HOME}' ${INPUT_REPORT}"
 branding:
   color: red
   icon: alert-octagon

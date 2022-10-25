@@ -9,7 +9,7 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w"
 RUN ls -lh
 
 # put the resharper binary in a scratch container
-FROM mcr.microsoft.com/dotnet/sdk:${DOT_NET_VERSION}
+FROM mcr.microsoft.com/dotnet/core/sdk:${DOT_NET_VERSION}
 ARG RESHARPER_CLI_VERSION
 
 RUN apt-get update && apt-get install -y zip
