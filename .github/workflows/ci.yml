@@ -24,7 +24,7 @@ jobs:
       matrix:
         include:
           - resharper_cli_version: '2021.3.4'
-            dot_net_version: '3.1'
+            dot_net_version: '6.0-focal'
 
     steps:
       - uses: actions/checkout@v2

@@ -68,6 +68,7 @@ func generateReport(slnPath string, cacheHomePtr *string) string {
 	outPath := filepath.Join(os.TempDir(), "report.xml")
 
   arguments := []string{}
+  arguments = append(arguments, "inspectcode")
   arguments = append(arguments, "--output=" + outPath)
   if *cacheHomePtr != "" {
     os.MkdirAll(*cacheHomePtr, 0755)
@@ -75,14 +76,14 @@ func generateReport(slnPath string, cacheHomePtr *string) string {
   }
   arguments = append(arguments,slnPath)
 
-  fmt.Fprintf(os.Stderr, "run inspectcode.sh " + strings.Join(arguments, " ") + "\n")
-	cmd := exec.Command("inspectcode.sh", arguments...)
+  fmt.Fprintf(os.Stderr, "jb " + strings.Join(arguments, " ") + "\n")
+	cmd := exec.Command("jb", arguments...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
 	err := cmd.Run()
 	if err != nil {
-	  fmt.Fprintf(os.Stderr, "Error run inspectcode.sh")
+	  fmt.Fprintf(os.Stderr, "Error run inspectcode")
 		os.Exit(1)
 	}
 
